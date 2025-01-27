@@ -65,12 +65,33 @@ const validateLogin = async (table, email, password) => {
           message: "user verified",
         };
       }
-    }else{
-      return { success: false, message:"unauthorized user"}
+    } else {
+      return { success: false, message: "unauthorized user" };
     }
   } catch (err) {
     console.error("", err);
   }
 };
 
-module.exports = { fetchTableData, insertData, validateLogin };
+const updateTable = async (table, data, where) => {
+  if (!table || !data) {
+    return null;
+  }
+  try {
+    console.log(data,"hello");
+    const columns = Object.keys(data);
+
+    const setClause = columns.map((col) => `${col} = '${data[col]}'`).join(", ");
+    console.log(setClause);
+    const whereKeys = Object.keys(where);
+    const whereClause = whereKeys.map((key) => `${key} = '${where[key]}'`).join(" AND ");
+    const query = `UPDATE ${table} SET ${setClause} WHERE ${whereClause}`;
+    console.log(query);
+    const [result] = await db.promise().query(query);
+    console.log(result);
+    return result;
+  } catch (err) {
+    console.error("error", err);
+  }
+};
+module.exports = { fetchTableData, insertData, validateLogin, updateTable };

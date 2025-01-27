@@ -1,7 +1,12 @@
 const db = require("../Database/db");
 const { generateToken, verifyToken } = require("../Middleware/JwtClient");
-
-const { fetchTableData, insertData, validateLogin } = require("../Model/user");
+const bcrypt = require("bcrypt");
+const {
+  fetchTableData,
+  insertData,
+  validateLogin,
+  updateTable,
+} = require("../Model/user");
 
 const user = async (req, res) => {
   res.status(200).json({
@@ -121,4 +126,68 @@ const login = async (req, res) => {
   }
 };
 
-module.exports = { user, user2, userData, insertUserData, login };
+const updateUser = async (req, res) => {
+  const { email, password, name, id } = req.body;
+  if (email || password) {
+    const data = {
+      email: email,
+      // password: password,
+      name: name,
+    };
+    try {
+      const response = await updateTable("users", data, {
+        id: id,
+        email: email,
+        isDeleted: 0,
+      });
+
+      if (response) {
+        res
+          .status(200)
+          .json({ message: "User updated successfully", data: [] });
+      } else {
+        res.status(404).json({ message: "User not found" });
+      }
+    } catch {
+      console.log("err");
+    }
+  } else {
+    return res.status(403).json({ message: "Missing email or password" });
+  }
+};
+
+const createUser = async (req, res) => {
+  const { email, password, name } = req.body;
+  if (email || password || name) {
+    try {
+      const newPassword  = await bcrypt.hash(password, 10);
+      console.log(newPassword);
+      const data = {
+        email: email,
+        password: newPassword,
+        name: name,
+      };
+      const checkUser = fetchTableData("users", { email: email });
+      if (checkUser[0]) {
+        res.status(403).json({ status: false, message: "User already exists" });
+      }
+      const response = await insertData("users", data);
+      if (response) {
+        return response.json({
+          status: true,
+          message: "user created successfully",
+        });
+      } else {
+        return res
+          .status(400)
+          .json({ status: false, message: "User already exists" });
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  } else {
+    return res.status(403).json({ message: "Missing email, password or name" });
+  }
+};
+
+module.exports = { user, user2, userData, insertUserData, login, updateUser ,createUser};

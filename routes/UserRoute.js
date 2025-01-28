@@ -7,10 +7,10 @@ const { verifyToken } = require("../Middleware/JwtClient");
 console.log(user, "dfhhdfh");
 router.get("/", user);
 router.get("/GET", user2);
-router.get("/user", userData);
-router.post("/user", insertUserData);
+router.get("/user",verifyToken, userData);
+router.post("/user-i", insertUserData);
 
-router.post("/login",verifyToken ,login);
+router.post("/login" ,login);
 router.post("/update-user",updateUser);
 router.post("/create-user",createUser);
 

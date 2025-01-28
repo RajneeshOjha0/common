@@ -20,7 +20,7 @@ const generateToken = async (email) => {
 
 const verifyToken = async (req, res,next) => {
     console.log(req.body);
-  const token = req.headers["host"];
+  const token = req.headers["authorization"] || req.headers["Authorization"];
   console.log(token);
   try {
     if (jwt.verify(token, jwtSecretKey)) {

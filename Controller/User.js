@@ -35,7 +35,11 @@ const user2 = async (req, res) => {
 
 const userData = async (req, res) => {
   try {
-    const results = await fetchTableData("projects", ["isDeleted=0"]);
+    const id = req.body.id;
+    const results = await fetchTableData("projects", [
+      `userId = ${id}`,
+      "isDeleted=0",
+    ]);
 
     const safeParseJSON = (data) => {
       try {
@@ -108,7 +112,7 @@ const login = async (req, res) => {
 
     const user = await validateLogin("users", email, password);
     console.log(user);
-    if (user.success == false) {
+    if (user.success == true) {
       const token = await generateToken(email);
       console.log(token);
       res.status(200).json({
@@ -160,27 +164,29 @@ const createUser = async (req, res) => {
   const { email, password, name } = req.body;
   if (email || password || name) {
     try {
-      const newPassword  = await bcrypt.hash(password, 10);
+      const newPassword = await bcrypt.hash(password, 10);
       console.log(newPassword);
       const data = {
         email: email,
         password: newPassword,
         name: name,
       };
-      const checkUser = fetchTableData("users", { email: email });
+      const checkUser = await fetchTableData("users", [`email= '${email}'`]);
+      // console.log(checkUser);
       if (checkUser[0]) {
         res.status(403).json({ status: false, message: "User already exists" });
-      }
-      const response = await insertData("users", data);
-      if (response) {
-        return response.json({
-          status: true,
-          message: "user created successfully",
-        });
       } else {
-        return res
-          .status(400)
-          .json({ status: false, message: "User already exists" });
+        const response = await insertData("users", data);
+        if (response) {
+          return res.json({
+            status: true,
+            message: "user created successfully",
+          });
+        } else {
+          return res
+            .status(400)
+            .json({ status: false, message: "User already exists" });
+        }
       }
     } catch (e) {
       console.log(e);
@@ -190,4 +196,12 @@ const createUser = async (req, res) => {
   }
 };
 
-module.exports = { user, user2, userData, insertUserData, login, updateUser ,createUser};
+module.exports = {
+  user,
+  user2,
+  userData,
+  insertUserData,
+  login,
+  updateUser,
+  createUser,
+};

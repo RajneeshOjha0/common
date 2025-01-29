@@ -7,6 +7,7 @@ async function uploadFileToS3() {
   const secretAccessKey = 'your-secret-key';
   const objectKey = 'your-object-key.txt';
   const fileContent = 'Hello JavaScript SDK!';
+//config
 
   const s3Client = new S3Client({
     region,
